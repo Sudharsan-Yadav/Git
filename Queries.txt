@@ -1,0 +1,86 @@
+Queries:
+--------
+
+To check the pending acks:
+---------------------------
+
+select * from prd21_GEHC.GEHC_FDA_REQ_ACKS order by created_timestp desc;
+
+select * from prd21_gehc.GEHC_FDA_REQ_ACKS where txn_status   IS NULL and created_timestp like '%03-JUN-25%' ;
+
+*******************************************************************************************************************************
+
+JDEV QUERY:
+-----------
+
+select * from prd21_GEHC.GEHC_FDA_REQ_ACKS where FUNCTIONAL_ID like '%CAE-1083348%' order by created_timestp desc;
+
+*******************************************************************************************************************************
+
+select * from prd21_gehc.gehc_service_audit where created_by like '%PE_Supplier_GLPROD_v1_0_SCA%' and created_timestp > to_date('11/06/2024 23:59:59','MM/DD/YYYY HH24:MI:SS');
+
+select * from prd21_gehc.gehc_service_audit where created_by like '%PE_Response_Supplier_SOAR_v1_0_OSB%';
+
+select r.created_timestp, r.tracking_field1, r.tracking_field2, r.tracking_field3, r.created_by, r.correlation_id AS CORELATION
+FROM  prd21_gehc.gehc_service_audit r WHERE r.created_timestp >  to_date('10/20/2024 00:00:00','MM/DD/YYYY HH24:MI:SS')
+and r.created_timestp < to_date('11/14/2025 00:50:00','MM/DD/YYYY HH24:MI:SS') and created_by like  '%PE_PartsOrder_GLPROD_v2%';
+
+select * from prd21_gehc.gehc_service_audit where TRACKING_FIELD1 like '%5543329%' or TRACKING_FIELD2 like '%5543329%' or 
+TRACKING_FIELD3 like '%5543329%' ;
+
+*******************************************************************************************************************************
+
+
+select * from GEHC_SERVICE_AUDIT where created_by like '%PE_Supplier_GLPROD_v1_0_SCA%' and created_timestp > to_date('11/06/2024 23:59:59','MM/DD/YYYY HH24:MI:SS');
+
+select * from GEHC_SERVICE_AUDIT where created_by like '%PE_Response_Supplier_SOAR_v1_0_OSB%';
+
+*******************************************************************************************************************************
+
+====================to run in prd31_pl / prd21 / prd31 ====OTM==GLPROD==PACKMAN=================
+PlannedShipment_OTM_to_GLPROD
+ 
+select created_by Integration_Name,trunc(created_timestp) Trnx_Date,count (distinct correlation_id)  from prd21_gehc.GEHC_SERVICE_AUDIT where created_by =
+'WshReceivePShipmentFromOtm' and created_timestp > trunc(sysdate -4)
+and created_timestp < trunc(sysdate) group by created_by,trunc(created_timestp);
+ 
+Shipment_GLPROD_to_Packman_OTM
+ 
+select created_by Integration_Name,trunc(created_timestp) Trnx_Date,count (distinct correlation_id)  from prd31_gehc.GEHC_SERVICE_AUDIT where created_by =
+'Client_GLPROD_Shipment_Packman_OTM_v1_0_SCA' and created_timestp > trunc(sysdate -4)
+and created_timestp < trunc(sysdate) group by created_by,trunc(created_timestp);
+
+*******************************************************************************************************************************
+
+============== to run in soa infra prd21 ==============OTM====GLPROD=====================================
+ 
+Delivery_GLPROD_to_OTM / Item_GLPROD_to_OTM / Location_GLPROD_to_OTM / Shipment_GLPROD_to_OTM
+ 
+select sci.flow_id,sci.ecid,sci.title,ci.composite_name,ci.component_name,domain_name,ci.CREATION_DATE,ci.modify_date
+from SOAPRD21_SOAINFRA.sca_flow_instance sci,SOAPRD21_SOAINFRA.cube_instance ci
+where sci.flow_id=ci.flow_id and composite_name like '%WshSendDlvyToOtmService%' and CREATION_DATE like  '%30-MAR-25%';
+ 
+Delivery_GLPROD_to_OTM ERROR COUNT
+ 
+select title,count(*) from (select sci.flow_id,sci.ecid,sci.title,ci.composite_name,ci.component_name,domain_name,ci.CREATION_DATE,ci.modify_date, 
+ci.state from SOAPRD21_SOAINFRA.sca_flow_instance sci,SOAPRD21_SOAINFRA.cube_instance ci where sci.flow_id=ci.flow_id
+and ci.composite_name = 'WshSendDlvyToOtmService' and ci.creation_date > (sysdate-1) )  group by title having count(*) >5 order by 2 desc;
+ 
+Shipment_OTM_to_Siebel_Americas_Return
+ 
+select sci.flow_id,sci.ecid,sci.title,ci.composite_name,ci.component_name,domain_name,ci.CREATION_DATE,ci.modify_date
+from SOAPRD21_SOAINFRA.sca_flow_instance sci,SOAPRD21_SOAINFRA.cube_instance ci
+where sci.flow_id=ci.flow_id and composite_name like '%CE_OTM_Return_Shipment_v1_0_SCA%' and CREATION_DATE like  '%30-MAR-25%';
+
+*******************************************************************************************************************************
+
+
+select trunc(created_timestp),count(distinct correlation_id)
+from prd31_GEHC.gehc_service_audit where created_timestp >
+to_date('09/30/2024 00:00:00','MM/DD/YYYY HH24:MI:SS') and
+created_timestp < to_date('09/30/2024 23:59:59','MM/DD/YYYY HH24:MI:SS')
+group by trunc(created_timestp) order by 1;
+
+select * from prd31_GEHC.gehc_service_audit where created_by like '%CE_GLPROD_EnterpriseService_Invoice_EBS_v1_0_OSB%';
+
+*******************************************************************************************************************************
