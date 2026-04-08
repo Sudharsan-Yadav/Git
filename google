@@ -1,0 +1,2 @@
+if aws
+ data x = 20
